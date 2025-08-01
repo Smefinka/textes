@@ -15,8 +15,9 @@
     .field label { display: block; margin-bottom: 5px; font-weight: bold; }
     .field input[type="text"],
     .field textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-    h2 { margin-top: 0; border-bottom: 2px solid #333; padding-bottom: 5px; }
-    .form-section { margin-bottom: 30px; padding-bottom: 10px; border-bottom: 1px dashed #aaa; }
+    h2, h3 { margin-top: 0; }
+    h2 { border-bottom: 2px solid #333; padding-bottom: 5px; }
+    .form-section { margin-bottom: 30px; padding: 10px; border-bottom: 1px dashed #aaa; position: relative; }
     .preview-section { margin-bottom: 40px; }
     .preview-item { margin-bottom: 10px; }
     .preview-item h3 { margin: 0 0 5px; font-size: 16px; color: #555; }
@@ -26,6 +27,9 @@
     #addBtn:active { background: #0069D9; }
     .copy-btn { background: #28A745; color: #fff; margin-top: 10px; }
     .copy-btn:active { background: #218838; }
+    .copy-form-btn { position: absolute; top: 10px; right: 10px; background: #17A2B8; color: #fff; }
+    .copy-form-btn:active { background: #138496; }
+    .h1-field input { background: #e9ecef; }
   </style>
 </head>
 <body>
@@ -41,6 +45,7 @@
   </div>
   <script>
     const labels = {
+      h1: 'H1',
       title: 'Название статьи',
       length: 'Размер знаков статьи',
       purpose: 'Цель текста',
@@ -63,37 +68,50 @@
     const formSections = document.getElementById('formSections');
     const previewSections = document.getElementById('previewSections');
 
-    document.getElementById('addBtn').addEventListener('click', () => {
-      addSection();
-    });
+    document.getElementById('addBtn').addEventListener('click', addSection);
 
     function addSection() {
       const idx = sectionCount++;
-      // Create form section
-      const formSec = document.createElement('div');
-      formSec.className = 'form-section';
+      // Form section
+      const formSec = document.createElement('div'); formSec.className = 'form-section';
+      // Copy form fields button
+      const copyFormBtn = document.createElement('button');
+      copyFormBtn.className = 'btn copy-form-btn';
+      copyFormBtn.textContent = 'Копировать поля';
+      copyFormBtn.addEventListener('click', () => copyForm(idx));
+      formSec.appendChild(copyFormBtn);
+      // H1 field
+      const h1Wrap = document.createElement('div'); h1Wrap.className = 'field h1-field';
+      const h1Lbl = document.createElement('label'); h1Lbl.htmlFor = 'h1-'+idx; h1Lbl.textContent = labels.h1 + ':';
+      const h1Inp = document.createElement('input'); h1Inp.type='text'; h1Inp.id='h1-'+idx; h1Inp.readOnly=true;
+      h1Wrap.appendChild(h1Lbl); h1Wrap.appendChild(h1Inp); formSec.appendChild(h1Wrap);
+      // Other fields
       fieldDefs.forEach(def => {
-        const fieldWrap = document.createElement('div'); fieldWrap.className = 'field';
-        const label = document.createElement('label'); label.htmlFor = def.id + '-' + idx;
-        label.textContent = labels[def.id] + ':';
-        fieldWrap.appendChild(label);
-        let input;
-        if (def.type === 'textarea') input = document.createElement('textarea');
-        else input = document.createElement('input');
-        input.id = def.id + '-' + idx;
-        if (def.type !== 'textarea') input.type = def.type;
-        input.placeholder = def.placeholder;
-        if (def.type === 'textarea') input.rows =  def.id==='structure'?4:3;
-        fieldWrap.appendChild(input);
-        formSec.appendChild(fieldWrap);
+        const wrap = document.createElement('div'); wrap.className = 'field';
+        const lbl = document.createElement('label'); lbl.htmlFor = def.id + '-' + idx;
+        lbl.textContent = labels[def.id] + ':';
+        wrap.appendChild(lbl);
+        const inp = def.type === 'textarea' ? document.createElement('textarea') : document.createElement('input');
+        if (def.type !== 'textarea') inp.type = def.type;
+        inp.id = def.id + '-' + idx;
+        inp.placeholder = def.placeholder;
+        if (def.type === 'textarea') inp.rows = def.id === 'structure' ? 4 : 3;
+        wrap.appendChild(inp);
+        formSec.appendChild(wrap);
       });
       formSections.appendChild(formSec);
 
-      // Create preview section
-      const prevSec = document.createElement('div');
-      prevSec.className = 'preview-section';
-      const header = document.createElement('h3'); header.textContent = `ТЗ #${idx+1}`;
-      prevSec.appendChild(header);
+      // Preview section
+      const prevSec = document.createElement('div'); prevSec.className = 'preview-section';
+      const hdr = document.createElement('h3'); hdr.textContent = `ТЗ #${idx+1}`;
+      prevSec.appendChild(hdr);
+      // Preview H1
+      const h1Item = document.createElement('div'); h1Item.className='preview-item';
+      const h1h3 = document.createElement('h3'); h1h3.textContent = labels.h1+':';
+      const h1p = document.createElement('p'); h1p.id='preview-h1-'+idx;
+      h1Item.appendChild(h1h3); h1Item.appendChild(h1p);
+      prevSec.appendChild(h1Item);
+      // Other preview items
       fieldDefs.forEach(def => {
         const item = document.createElement('div'); item.className = 'preview-item';
         const h3 = document.createElement('h3'); h3.textContent = labels[def.id] + ':';
@@ -101,41 +119,60 @@
         item.appendChild(h3); item.appendChild(p);
         prevSec.appendChild(item);
       });
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'btn copy-btn';
-      copyBtn.textContent = 'Скопировать ТЗ';
+      const copyBtn = document.createElement('button'); copyBtn.className = 'btn copy-btn';
+      copyBtn.textContent = 'Копировать ТЗ';
       copyBtn.addEventListener('click', () => copySection(idx));
       prevSec.appendChild(copyBtn);
       previewSections.appendChild(prevSec);
 
-      // Attach input listeners
+      // Attach listeners
+      const titleInp = document.getElementById('title-'+idx);
+      titleInp.addEventListener('input', () => {
+        document.getElementById('h1-'+idx).value = titleInp.value;
+        updatePreview('h1', idx);
+        updatePreview('title', idx);
+      });
       fieldDefs.forEach(def => {
-        const inp = document.getElementById(def.id + '-' + idx);
-        inp.addEventListener('input', () => updatePreview(def.id, idx));
+        document.getElementById(def.id + '-' + idx).addEventListener('input', () => updatePreview(def.id, idx));
       });
     }
 
     function updatePreview(id, idx) {
-      const inp = document.getElementById(id + '-' + idx);
-      let value = inp.value.trim();
-      if (id === 'length' && value) {
-        value = value.replace(/\s*ЗБП$/u, '').trim() + ' ЗБП';
-      }
-      const p = document.getElementById('preview-' + id + '-' + idx);
-      p.innerHTML = value ? value.replace(/\n/g, '<br>') : '<span style="color:#999">(не заполнено)</span>';
+      const inp = document.getElementById((id==='h1'?'h1':id) + '-' + idx);
+      let val = inp.value.trim();
+      if (id === 'length' && val) val = val.replace(/\s*ЗБП$/u, '').trim() + ' ЗБП';
+      const p = document.getElementById('preview-' + (id==='h1'?'h1':id) + '-' + idx);
+      p.innerHTML = val ? val.replace(/\n/g, '<br>') : '<span style="color:#999">(не заполнено)</span>';
     }
 
     function copySection(idx) {
-      const lines = fieldDefs.map(def => {
-        const p = document.getElementById('preview-' + def.id + '-' + idx);
-        return `${labels[def.id]}: ${p.innerText.trim()}`;
-      });
-      navigator.clipboard.writeText(lines.join('\n')).then(() => {
-        alert(`ТЗ #${idx+1} скопировано в буфер обмена`);
+      const htmlLines = ['h1', ...fieldDefs.map(f=>f.id)].map(id => {
+        const p = document.getElementById('preview-' + id + '-' + idx);
+        return `<p><strong>${labels[id]}:</strong> ${p.innerHTML}</p>`;
+      }).join('');
+      // Use execCommand to copy HTML
+      const container = document.createElement('div');
+      container.contentEditable = true; container.style.position='absolute'; container.style.left='-9999px';
+      container.innerHTML = htmlLines;
+      document.body.appendChild(container);
+      const range = document.createRange();
+      range.selectNodeContents(container);
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand('copy');
+      sel.removeAllRanges(); document.body.removeChild(container);
+      alert(`ТЗ #${idx+1} скопировано с форматированием`);
+    }
+
+    function copyForm(idx) {
+      const lines = ['h1', ...fieldDefs.map(f=>f.id)].map(id => {
+        const inp = document.getElementById((id==='h1'?'h1':id)+'-'+idx);
+        return `${labels[id]}: ${ (inp.value||'').trim()}`;
+      }).join('\n');
+      navigator.clipboard.writeText(lines).then(() => {
+        alert(`Поля ТЗ #${idx+1} скопированы`);
       });
     }
 
-    // Initialize first section
     addSection();
   </script>
 </body>
