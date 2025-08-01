@@ -5,64 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Форма и предпросмотр</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      display: flex;
-      height: 100vh;
-    }
-    .form-panel, .preview-panel {
-      padding: 20px;
-      width: 50%;
-      overflow-y: auto;
-    }
-    .form-panel {
-      background: #f9f9f9;
-      border-right: 1px solid #ddd;
-    }
-    .preview-panel {
-      background: #fff;
-    }
-    .field {
-      margin-bottom: 15px;
-    }
-    .field label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    .container { display: flex; height: 100vh; }
+    .form-panel, .preview-panel { padding: 20px; width: 50%; overflow-y: auto; }
+    .form-panel { background: #f9f9f9; border-right: 1px solid #ddd; }
+    .preview-panel { background: #fff; position: relative; }
+    .field { margin-bottom: 15px; }
+    .field label { display: block; margin-bottom: 5px; font-weight: bold; }
     .field input[type="text"],
-    .field input[type="number"],
-    .field textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    .field textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    .preview-panel h2 { margin-top: 0; border-bottom: 2px solid #333; padding-bottom: 5px; }
+    .preview-item { margin-bottom: 20px; }
+    .preview-item h3 { margin: 0 0 5px; font-size: 16px; color: #555; }
+    .preview-item p { margin: 0; white-space: pre-wrap; }
+    #copyBtn {
+      position: sticky;
+      bottom: 20px;
+      padding: 10px 20px;
       font-size: 14px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
-    .preview-panel h2 {
-      margin-top: 0;
-      border-bottom: 2px solid #333;
-      padding-bottom: 5px;
-    }
-    .preview-item {
-      margin-bottom: 20px;
-    }
-    .preview-item h3 {
-      margin: 0 0 5px;
-      font-size: 16px;
-      color: #555;
-    }
-    .preview-item p {
-      margin: 0;
-      white-space: pre-wrap;
-    }
+    #copyBtn:active { background: #45A049; }
   </style>
 </head>
 <body>
@@ -127,24 +95,42 @@
         <h3>Примерная структура текста:</h3>
         <p id="preview-structure"></p>
       </div>
+      <button id="copyBtn">Скопировать ТЗ</button>
     </div>
   </div>
   <script>
-    const fields = [
-      'title', 'length', 'purpose', 'required', 'additional', 'competitors', 'structure'
-    ];
+    const fields = ['title', 'length', 'purpose', 'required', 'additional', 'competitors', 'structure'];
+    const labels = {
+      title: 'Название статьи',
+      length: 'Размер знаков статьи',
+      purpose: 'Цель текста',
+      required: 'Обязательные ключевые фразы',
+      additional: 'Дополнительные ключевые фразы',
+      competitors: 'Примеры конкурентов',
+      structure: 'Примерная структура текста'
+    };
+
     fields.forEach(id => {
       const input = document.getElementById(id);
       const preview = document.getElementById('preview-' + id);
       input.addEventListener('input', () => {
         let value = input.value.trim();
-        // для поля length добавляем суффикс ЗБП
         if (id === 'length' && value) {
-          // удаляем повторы ЗБП и лишние пробелы
           value = value.replace(/\s*ЗБП$/u, '').trim() + ' ЗБП';
         }
         const html = value ? value.replace(/\n/g, '<br>') : '<span style="color:#999">(не заполнено)</span>';
         preview.innerHTML = html;
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const lines = fields.map(id => {
+        const text = document.getElementById('preview-' + id).innerText.trim();
+        return `${labels[id]}: ${text}`;
+      });
+      const fullText = lines.join('\n');
+      navigator.clipboard.writeText(fullText).then(() => {
+        alert('ТЗ скопировано в буфер обмена');
       });
     });
   </script>
