@@ -74,7 +74,7 @@
       </div>
       <div class="field">
         <label for="length">Размер знаков статьи</label>
-        <input type="text" id="length" placeholder="Например: 5000-6000 ЗБП">
+        <input type="text" id="length" placeholder="Например: 5000-6000">
       </div>
       <div class="field">
         <label for="purpose">Цель текста</label>
@@ -137,9 +137,14 @@
       const input = document.getElementById(id);
       const preview = document.getElementById('preview-' + id);
       input.addEventListener('input', () => {
-        // заменяем переводы строки на <br>
-        const value = input.value.trim();
-        preview.innerHTML = value ? value.replace(/\n/g, '<br>') : '<span style="color:#999">(не заполнено)</span>';
+        let value = input.value.trim();
+        // для поля length добавляем суффикс ЗБП
+        if (id === 'length' && value) {
+          // удаляем повторы ЗБП и лишние пробелы
+          value = value.replace(/\s*ЗБП$/u, '').trim() + ' ЗБП';
+        }
+        const html = value ? value.replace(/\n/g, '<br>') : '<span style="color:#999">(не заполнено)</span>';
+        preview.innerHTML = html;
       });
     });
   </script>
