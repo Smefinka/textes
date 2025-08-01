@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Форма и предпросмотр</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .form-panel, .preview-panel {
+      padding: 20px;
+      width: 50%;
+      overflow-y: auto;
+    }
+    .form-panel {
+      background: #f9f9f9;
+      border-right: 1px solid #ddd;
+    }
+    .preview-panel {
+      background: #fff;
+    }
+    .field {
+      margin-bottom: 15px;
+    }
+    .field label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .field input[type="text"],
+    .field input[type="number"],
+    .field textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .preview-panel h2 {
+      margin-top: 0;
+      border-bottom: 2px solid #333;
+      padding-bottom: 5px;
+    }
+    .preview-item {
+      margin-bottom: 20px;
+    }
+    .preview-item h3 {
+      margin: 0 0 5px;
+      font-size: 16px;
+      color: #555;
+    }
+    .preview-item p {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-panel">
+      <div class="field">
+        <label for="title">Название статьи</label>
+        <input type="text" id="title" placeholder="Введите название статьи">
+      </div>
+      <div class="field">
+        <label for="length">Размер знаков статьи</label>
+        <input type="text" id="length" placeholder="Например: 5000-6000 ЗБП">
+      </div>
+      <div class="field">
+        <label for="purpose">Цель текста</label>
+        <textarea id="purpose" rows="3" placeholder="Опишите цель текста"></textarea>
+      </div>
+      <div class="field">
+        <label for="required">Обязательные ключевые фразы</label>
+        <textarea id="required" rows="3" placeholder="Фразы через запятую"></textarea>
+      </div>
+      <div class="field">
+        <label for="additional">Дополнительные рекомендуемые ключевые фразы</label>
+        <textarea id="additional" rows="3" placeholder="Фразы через запятую"></textarea>
+      </div>
+      <div class="field">
+        <label for="competitors">Примеры конкурентов</label>
+        <textarea id="competitors" rows="3" placeholder="Ссылки или названия через запятую"></textarea>
+      </div>
+      <div class="field">
+        <label for="structure">Примерная структура текста</label>
+        <textarea id="structure" rows="4" placeholder="Пункты через перевод строки"></textarea>
+      </div>
+    </div>
+    <div class="preview-panel">
+      <h2>Предпросмотр</h2>
+      <div class="preview-item">
+        <h3>Название статьи:</h3>
+        <p id="preview-title"></p>
+      </div>
+      <div class="preview-item">
+        <h3>Размер знаков статьи:</h3>
+        <p id="preview-length"></p>
+      </div>
+      <div class="preview-item">
+        <h3>Цель текста:</h3>
+        <p id="preview-purpose"></p>
+      </div>
+      <div class="preview-item">
+        <h3>Обязательные ключевые фразы:</h3>
+        <p id="preview-required"></p>
+      </div>
+      <div class="preview-item">
+        <h3>Дополнительные рекомендуемые ключевые фразы:</h3>
+        <p id="preview-additional"></p>
+      </div>
+      <div class="preview-item">
+        <h3>Примеры конкурентов:</h3>
+        <p id="preview-competitors"></p>
+      </div>
+      <div class="preview-item">
+        <h3>Примерная структура текста:</h3>
+        <p id="preview-structure"></p>
+      </div>
+    </div>
+  </div>
+  <script>
+    const fields = [
+      'title', 'length', 'purpose', 'required', 'additional', 'competitors', 'structure'
+    ];
+    fields.forEach(id => {
+      const input = document.getElementById(id);
+      const preview = document.getElementById('preview-' + id);
+      input.addEventListener('input', () => {
+        // заменяем переводы строки на <br>
+        const value = input.value.trim();
+        preview.innerHTML = value ? value.replace(/\n/g, '<br>') : '<span style="color:#999">(не заполнено)</span>';
+      });
+    });
+  </script>
+</body>
+</html>
